@@ -241,14 +241,16 @@ class DataGenTIFF:
         """
 
         reconstructed_image = np.zeros((self.image_height//2, self.image_width), dtype=predictions.dtype)
-        print(reconstructed_image.shape)
+        print("reconstructed_image.shape:",reconstructed_image.shape)
         patch_num = 0
         for x in range(0, self.image_width - self.patch_size + 1, self.patch_size - self. overlap):
             for y in range(self.image_height // 2, self.image_height - self.patch_size + 1, self.patch_size - self. overlap): 
                     patch = predictions[patch_num, :, :]
-                    print(reconstructed_image[y : y + self.patch_size, x : x + self.patch_size].shape)
-                    print(patch.shape)
+                    print(y , y + self.patch_size, x , x + self.patch_size)
+                    print("reconstructed_image:",reconstructed_image[y : y + self.patch_size, x : x + self.patch_size].shape)
+                    print("patch:",patch.shape)
                     reconstructed_image[y : y + self.patch_size, x : x + self.patch_size] = patch
+                    patch_num += 1
 
         return reconstructed_image
     
