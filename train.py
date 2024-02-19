@@ -182,14 +182,14 @@ with strategy.scope():
     # else:
     # if (args.model == 'attentionUnet'):
     model = create_unet(input_shape, num_classes)
-    model.compile(optimizer = Adam(learning_rate=args.learning_rate),
+    model.compile(optimizer = Adam(learning_rate=0.0001,clipnorm=1.0),
                     loss = dice_coef_loss,
                     metrics = [dice_coef,'accuracy'])
 
-# # Add L2 regularization to certain layers:  
-# for layer in model.layers:  
-#     if isinstance(layer, layers.Conv2D) or isinstance(layer, layers.Dense):  
-#         layer.kernel_regularizer = l2(0.001)  # l2 regularizer with strength of 0.001
+# Add L2 regularization to certain layers:  
+for layer in model.layers:  
+    if isinstance(layer, layers.Conv2D) or isinstance(layer, layers.Dense):  
+        layer.kernel_regularizer = l2(0.001)  # l2 regularizer with strength of 0.001
 
 # define hyperparameters and callback modules
 patience = 3
