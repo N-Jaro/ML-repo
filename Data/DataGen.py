@@ -95,13 +95,13 @@ class DataGenTIFF:
 
     def _create_datasets(self):
         """Creates training and validation datasets from raster images."""
-        # Generate training patches
-        training_patches = self._generate_random_patches(
-            self.image_width, self.image_height, self.patch_size, self.num_train_patches, top_only=True
-        )
         # Generate validation patches (non-overlapping with training)
-        validation_patches = self._generate_nonoverlapping_patches(
-            self.image_width, self.image_height, self.patch_size, self.num_val_patches, training_patches, top_only=True
+        validation_patches = self._generate_random_patches(
+            self.image_width, self.image_height, self.patch_size, self.num_val_patches, top_only=True
+        )
+        # Generate training patches
+        training_patches = self._generate_nonoverlapping_patches(
+            self.image_width, self.image_height, self.patch_size, self.num_train_patches, validation_patches, top_only=True
         )
         if len(validation_patches) < self.num_val_patches:
             print(f"Warning: Generated only {len(validation_patches)} validation patches.")
