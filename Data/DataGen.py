@@ -127,6 +127,8 @@ class DataGenTIFF:
 
     def tf_data_generator(self, patch_locations, batch_size, shuffle=True):
         """Data generator using TensorFlow's Dataset API."""
+
+        @tf.function
         def load_and_process_patch(self, patch):
             # TensorFlow ops should act on individual elements
             xmin = patch[0]
@@ -160,6 +162,7 @@ class DataGenTIFF:
         return patches
 
     def create_test_generator(self, batch_size):
+        
         def test_data_generator():
             
             @tf.function
