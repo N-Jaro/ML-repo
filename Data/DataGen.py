@@ -239,8 +239,7 @@ class DataGenTIFF:
 
         fig, ax = plt.subplots(figsize=(self.image_width / 100, self.image_height / 100))  #  Scale according to preference
         # Display the image as the background
-        file = self.raster_files[0]  # Select a raster file to display
-        ax.imshow(self.raster_data[file], cmap='gray', vmin=0, vmax=1)
+        ax.imshow(self.reference_data, cmap='gray', vmin=0, vmax=1)
 
         # Training patches in green
         for patch in self.training_patches:
