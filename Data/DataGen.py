@@ -21,6 +21,9 @@ class DataGenTIFF:
         self.num_train_patches = num_train_patches
         self.num_val_patches = num_val_patches
         self.overlap = overlap
+        self.image_width = 0
+        self.image_height = 0
+        
 
         # Collect all TIFF files, explicitly excluding 'reference.tif'
         self.raster_files = sorted([f for f in os.listdir(data_path) 
@@ -28,7 +31,7 @@ class DataGenTIFF:
         if len(self.raster_files) != 8:  # Updated expected count
             raise ValueError("Incorrect number of raster images. Expected 8 (excluding reference.tif)")
         
-        self.raster_data, self.reference_data, self.image_width, self.image_height = self._load_data()
+        self.raster_data, self.reference_data = self._load_data()
         self.training_patches, self.validation_patches = self._create_datasets()
 
     def _standardize_raster(self, raster_data):
@@ -57,7 +60,7 @@ class DataGenTIFF:
             if file == 'reference.tif': 
                 with rasterio.open(os.path.join(self.data_path, file)) as src:
                     reference_data = src.read()
-                    image_width, image_height = src.shape
+                    self.image_width, self.image_height = src.shape
                 break  
 
         for file in self.raster_files:
@@ -65,7 +68,7 @@ class DataGenTIFF:
                 with rasterio.open(os.path.join(self.data_path, file)) as src:
                     data[file] = self._standardize_raster(src.read())
 
-        return data, reference_data, image_width, image_height
+        return data, reference_data
 
     def _create_datasets(self):
         """Creates training and validation datasets from raster images."""
