@@ -27,7 +27,7 @@ parser.add_argument('--name_id', type=str, default='',
                     help='Identifier for the experiment run (affects save locations).')
 parser.add_argument('--gpus', type=int, default=2,
                     help='Number of GPUs to utilize for training.')
-parser.add_argument('--project_name', type=str, default='DARPA-CriticalMAAS',
+parser.add_argument('--project_name', type=str, default='MAML-project',
                     help='Name of the Weights & Biases project.')
 parser.add_argument('--model', type=str, default='attentionUnet',
                     help='Segmentation model architecture (e.g., attentionUnet, MultiResUnet)')
@@ -41,10 +41,8 @@ parser.add_argument('--optimizer', type=str, default='Adam',
                     help='Optimizer to use (e.g., Adam, SGD, RMSprop)')
 
 #Data Args
-parser.add_argument('--data_dir', type=str, default='./data/Michigan',
+parser.add_argument('--data_dir', type=str, default='/projects/bbym/nathanj/ML-repo/Alexander/',
                     help='Directory containing all TIFF files.')
-parser.add_argument('--augment', type=bool, default=True,
-                    help='Whether to apply data augmentation.')
 parser.add_argument('--patch_size', type=int, default=256,
                     help='Patch width and height')
 parser.add_argument('--num_train_patches', type=int, default=200,
@@ -57,6 +55,8 @@ parser.add_argument('--test_overlap', type=int, default=50,
 parser.add_argument('--seed', type=int, default=4444,
                     help='Random seed for reproducibility.')
 
+# parser.add_argument('--augment', type=bool, default=True,
+#                     help='Whether to apply data augmentation.')
 # parser.add_argument('--rotation_rate', type=float, default=0.4,
 #                     help='Probability of applying a random rotation during augmentation.')
 # parser.add_argument('--vertical_flip_rate', type=float, default=0.4,
@@ -84,7 +84,7 @@ print("********************************")
 
 np.random.seed(args.seed)
 
-data_generator = DataGenTIFF(args.data_path, patch_size = args.patch_size, num_train_patches = args.num_train_patches, 
+data_generator = DataGenTIFF(args.data_dir, patch_size = args.patch_size, num_train_patches = args.num_train_patches, 
                                 num_val_patches = args.num_val_patches, overlap = args.test_overlap)
 
 training_dataset = data_generator.create_train_dataset()
