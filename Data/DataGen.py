@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
 class DataGenTIFF:
-    def __init__(self, data_path,batch_size=32, patch_size=256, num_train_patches=200, num_val_patches=100, overlap=30):
+    def __init__(self, data_path,batch_size=32, patch_size=224, num_train_patches=200, num_val_patches=100, overlap=30):
         """
         Initializes the DataGenTIFF class.
 
