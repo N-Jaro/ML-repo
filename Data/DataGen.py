@@ -3,6 +3,8 @@ import rasterio
 import numpy as np
 import tensorflow as tf
 from rtree import index
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
 class DataGenTIFF:
     def __init__(self, data_path,batch_size=32, patch_size=256, num_train_patches=200, num_val_patches=100, overlap=30):
@@ -201,3 +203,29 @@ class DataGenTIFF:
                 yield tf.squeeze(X_batch)  
 
         return test_data_generator() 
+    
+    def visualize_patches(self):
+        """Draws squares for training and validation patches on an image-sized canvas."""
+
+        fig, ax = plt.subplots(figsize=(self.image_width / 100, self.image_height / 100))  #  Scale according to preference
+
+        # Training patches in green
+        for patch in self.training_patches:
+            xmin, ymin, xmax, ymax = patch
+            rect = mpatches.Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, linewidth=1, edgecolor='green', facecolor='none')
+            ax.add_patch(rect)
+
+        # Validation patches in red
+        for patch in self.validation_patches:
+            xmin, ymin, xmax, ymax = patch
+            rect = mpatches.Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, linewidth=1, edgecolor='red', facecolor='none')
+            ax.add_patch(rect)
+
+        ax.set_xlim(0, self.image_width)
+        ax.set_ylim(self.image_height, 0)  # Invert y-axis for image-like coordinates 
+        ax.set_aspect('equal')  
+
+        plt.xlabel('X')
+        plt.ylabel('Y')
+        plt.title('Patch Locations')
+        plt.show()
