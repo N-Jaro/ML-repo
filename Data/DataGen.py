@@ -127,6 +127,7 @@ class DataGenTIFF:
 
     def tf_data_generator(self, patch_locations, batch_size, shuffle=True):
         """Data generator using TensorFlow's Dataset API."""
+        @tf.function
         def load_and_process_patch(patch):
             xmin, ymin, xmax, ymax = patch
             x_data = tf.stack([self.raster_data[file][ymin:ymax, xmin:xmax] 
@@ -157,7 +158,8 @@ class DataGenTIFF:
 
     def create_test_generator(self, batch_size):
         def test_data_generator():
-
+            
+            @tf.function
             def load_patches(xmin, ymin, xmax, ymax):
                 x_data = tf.stack([self.raster_data[file][ymin:ymax, xmin:xmax] 
                                 for file in self.raster_files if file != 'reference.tif'], axis=-1)
