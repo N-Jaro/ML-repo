@@ -211,7 +211,7 @@ class DataGenTIFF:
                 patches.append([x, y, x + self.patch_size, y + self.patch_size])
         return patches
 
-    def create_validation_dataset(self):
+    def create_test_dataset(self):
         """Creates a TensorFlow Dataset object for the training set."""
         def generator():
             patches = self._generate_testing_patches()
