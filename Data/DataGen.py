@@ -73,7 +73,7 @@ class DataGenTIFF:
 
         for file in self.raster_files:
             if file != 'reference.tif':  
-                reference_data = np.array(Image.open(os.path.join(self.data_path, file)))
+                raster_array = np.array(Image.open(os.path.join(self.data_path, file)))
                 print(raster_array.shape)
 
                 # Modify pixels less than -500 (using a single operation)
