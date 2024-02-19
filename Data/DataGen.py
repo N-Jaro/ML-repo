@@ -178,7 +178,7 @@ class DataGenTIFF:
         dataset = tf.data.Dataset.from_generator(
             generator,  # Call the generator
             output_signature=(
-                tf.TensorSpec(shape=(256, 256, len(self.raster_files) - 1), dtype=tf.float32), 
+                tf.TensorSpec(shape=(256, 256, 8), dtype=tf.float32), 
                 tf.TensorSpec(shape=(256, 256), dtype=tf.float32)
             )
         )
@@ -196,7 +196,7 @@ class DataGenTIFF:
         dataset = tf.data.Dataset.from_generator(
             generator,  # Call the generator
             output_signature=(
-                tf.TensorSpec(shape=(256, 256, len(self.raster_files) - 1), dtype=tf.float32), 
+                tf.TensorSpec(shape=(256, 256, 8), dtype=tf.float32), 
                 tf.TensorSpec(shape=(256, 256), dtype=tf.float32)
             )
         )
@@ -222,7 +222,7 @@ class DataGenTIFF:
         dataset = tf.data.Dataset.from_generator(
             generator,  # Call the generator
             output_signature=(
-                tf.TensorSpec(shape=(256, 256, len(self.raster_files) - 1), dtype=tf.float32), 
+                tf.TensorSpec(shape=(256, 256, 8), dtype=tf.float32), 
                 tf.TensorSpec(shape=(256, 256), dtype=tf.float32)
             )
         )
@@ -244,14 +244,16 @@ class DataGenTIFF:
         patch_count = np.zeros_like(reconstructed_image)  # Keep track of patch overlaps
 
         patch_num = 0
-        for x in range(0, self.image_width - self.patch_size + 1, self.patch_size - self.overlap):
-            for y in range(self.image_height // 2, self.image_height - self.patch_size + 1, self.patch_size - self.overlap): 
-                reconstructed_image[y : y + self.patch_size, x : x + self.patch_size] += predictions[patch_num, :, :]
-                patch_count[y : y + self.patch_size, x : x + self.patch_size] += 1
-                patch_num += 1
+        for x in range(0, self.image_width - self.patch_size + 1, self.patch_size - self. overlap):
+            for y in range(self.image_height // 2, self.image_height - self.patch_size + 1, self.patch_size - self. overlap): 
+                if predictions.ndim == 3:
+                    patch = predictions[patch_num, :, 0]  # Extract a patch (assuming first channel) 
+                else:
+                    patch = predictions[patch_num, :, :]
 
-        # Average out overlapped regions
-        reconstructed_image /= patch_count
+                # OR Logic 
+                mask = patch != 0  # Create a mask of non-zero pixels within the patch
+                reconstructed_image[y : y + self.patch_size, x : x + self.patch_size][mask] = patch[mask] 
 
         return reconstructed_image
     
