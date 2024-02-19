@@ -68,7 +68,7 @@ class DataGenTIFF:
         for file in self.raster_files:
             if file == 'reference.tif': 
                 reference_data = np.array(Image.open(os.path.join(self.data_path, file)))
-                self.image_height, self.image_width, _ = reference_data.shape
+                self.image_height, self.image_width = reference_data.shape
                 break  
 
         for file in self.raster_files:
