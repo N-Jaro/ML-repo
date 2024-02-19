@@ -263,5 +263,5 @@ class DataGenTIFF:
         fig, ax = plt.subplots(figsize=(self.image_width / 100, self.image_height / 100))  #  Scale according to preference
         file = self.raster_files[indx]
         plt.imshow(self.raster_data[file], cmap='gray',vmin=0, vmax=1)
-        plt.title('Raster at ', indx)
+        # plt.title('Raster at ', indx)
         plt.show()
