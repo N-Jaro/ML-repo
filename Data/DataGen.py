@@ -200,11 +200,6 @@ class DataGenTIFF:
 
         return dataset.batch(self.batch_size).prefetch(tf.data.AUTOTUNE)
 
-
-
-
-
-
     def _generate_testing_patches(self): 
         """Generates testing patch locations (bottom part only)."""
         patches = []
@@ -213,26 +208,49 @@ class DataGenTIFF:
                 patches.append([x, y, x + self.patch_size, y + self.patch_size])
         return patches
 
-    def create_test_generator(self, batch_size):
-        
-        def test_data_generator():
-            
-            @tf.function
-            def load_patches(xmin, ymin, xmax, ymax):
-                x_data = tf.stack([self.raster_data[file][ymin:ymax, xmin:xmax] 
-                                for file in self.raster_files if file != 'reference.tif'], axis=-1)
-                return x_data
+    def create_validation_dataset(self):
+        """Creates a TensorFlow Dataset object for the training set."""
+        def generator():
+            patches = self._generate_testing_patches()
+            for xmin,ymin,xmax,ymax in patches:
+                data, label = self._load_and_process_patch(xmin,ymin,xmax,ymax)
+                yield data, label
 
-            for patch in self._generate_testing_patches():
-                xmin = patch[0]
-                ymin = patch[1]
-                xmax = patch[2]
-                ymax = patch[3]
-                X_batch = tf.data.Dataset.from_tensors(0).repeat(batch_size) 
-                X_batch = X_batch.map(lambda _: load_patches(xmin, ymin, xmax, ymax)) 
-                yield tf.squeeze(X_batch)  
+        dataset = tf.data.Dataset.from_generator(
+            generator,  # Call the generator
+            output_signature=(
+                tf.TensorSpec(shape=(256, 256, len(self.raster_files) - 1), dtype=tf.float32), 
+                tf.TensorSpec(shape=(256, 256), dtype=tf.float32)
+            )
+        )
 
-        return test_data_generator() 
+        return dataset.batch(self.batch_size).prefetch(tf.data.AUTOTUNE)
+
+    def reconstruct_predictions(self, predictions):
+        """Reconstructs a full image from predicted patches obtained from the test data.
+
+        Args:
+            predictions: A NumPy array of shape (n, 256, 256) where n is the number of 
+                        predicted patches.
+
+        Returns:
+            A NumPy array representing the reconstructed image.
+        """
+
+        reconstructed_image = np.zeros((self.image_height, self.image_width), dtype=predictions.dtype)
+        patch_count = np.zeros_like(reconstructed_image)  # Keep track of patch overlaps
+
+        patch_num = 0
+        for x in range(0, self.image_width - self.patch_size + 1, self.patch_size - self.overlap):
+            for y in range(self.image_height // 2, self.image_height - self.patch_size + 1, self.patch_size - self.overlap): 
+                reconstructed_image[y : y + self.patch_size, x : x + self.patch_size] += predictions[patch_num, :, :]
+                patch_count[y : y + self.patch_size, x : x + self.patch_size] += 1
+                patch_num += 1
+
+        # Average out overlapped regions
+        reconstructed_image /= patch_count
+
+        return reconstructed_image
     
     def visualize_patches(self):
         """Draws squares for training and validation patches on an image-sized canvas."""
