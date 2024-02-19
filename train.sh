@@ -5,13 +5,13 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=16
 #SBATCH --gpus-per-node=2
-#SBATCH --output=/projects/bbym/nathanj/ML-proj/imagenet_and_augment.out
+#SBATCH --output=/projects/bbym/nathanj/ML-repo/Alexander_train.out
 
 # Load required modules
 module load anaconda3_gpu cudnn
 
 # Change directory
-cd /projects/bbym/nathanj/attentionUnet
+cd /projects/bbym/nathanj/ML-repo
 
 # Execute the python script
 python train.py --name_id 'Alexander_train'
