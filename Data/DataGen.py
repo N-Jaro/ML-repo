@@ -42,7 +42,7 @@ class DataGenTIFF:
         if len(self.raster_files) != 9:  # Updated expected count
             raise ValueError("Incorrect number of raster images. Expected 9 ( 8 + reference.tif)")
         
-        self.raster_data, self.reference_data = self._load_data()
+        self.raster_data, self.reference_data, self.ref_bottom_half = self._load_data()
         self.training_patches, self.validation_patches = self._create_datasets()
 
     def _standardize_raster(self, raster_data):
@@ -65,12 +65,14 @@ class DataGenTIFF:
         """Loads both input rasters and the reference raster."""
         data = {}
         reference_data = None
-
+        bottom_half = None
+        
         #  Handle reference raster loading
         reference_path = os.path.join(self.data_path, 'reference.tif')  
         with rasterio.open(reference_path) as src:
             reference_data = src.read(1)  # Read the first band 
             self.image_height, self.image_width = reference_data.shape
+            bottom_half = reference_data[self.image_height // 2:,:]
 
         # Load and process input rasters
         for file in self.raster_files:
@@ -91,7 +93,7 @@ class DataGenTIFF:
 
                     data[file] = self._standardize_raster(raster_array) 
 
-        return data, reference_data
+        return data, reference_data, bottom_half
 
     def _create_datasets(self):
         """Creates training and validation datasets from raster images."""
