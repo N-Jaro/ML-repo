@@ -27,7 +27,15 @@ class DataGenTIFF:
         self.overlap = overlap
         self.image_width = 0
         self.image_height = 0
-        
+
+        # Print out the configuration
+        print("GenTIFF Initialization:")
+        print(f"    Data Path: {self.data_path}")
+        print(f"    Patch Size: {self.patch_size}")
+        print(f"    Batch Size: {self.batch_size}")
+        print(f"    Training Patches: {self.num_train_patches}")
+        print(f"    Validation Patches: {self.num_val_patches}")
+        print(f"    Overlap: {self.overlap}")
 
         # Collect all TIFF files, explicitly excluding 'reference.tif'
         self.raster_files = sorted([f for f in os.listdir(data_path) if f.endswith('.tif')])
@@ -53,7 +61,6 @@ class DataGenTIFF:
         ref_shape = (self.image_height, self.image_width) 
 
         new_data = np.zeros(ref_shape, dtype=raster_data.dtype)
-        print("new_data.shape:", new_data.shape)
         new_data = raster_data[:ref_shape[0], :ref_shape[1]] 
 
         # Handle potential padding
@@ -83,10 +90,12 @@ class DataGenTIFF:
                 # Modify pixels less than -500 (using a single operation)
                 raster_array[raster_array < -1000] = np.nan
 
-                # Min-max normalization
-                data_min = np.nanmin(raster_array)
-                data_max = np.nanmax(raster_array)
-                raster_array = (raster_array - data_min) / (data_max - data_min) 
+                # Quantile normalization
+                q1 = np.nanpercentile(raster_array, 5)  # Lower quantile (e.g., 5th percentile)
+                q3 = np.nanpercentile(raster_array, 95)  # Upper quantile (e.g., 95th percentile)
+                iqr = q3 - q1
+                raster_array = np.clip(raster_array, q1, q3)  # Clip outliers
+                raster_array = (raster_array - q1) / iqr  # Normalize
 
                 data[file] = self._standardize_raster(raster_array) 
 
@@ -108,13 +117,12 @@ class DataGenTIFF:
     
     def is_patch_valid(self, ymin, ymax, xmin, xmax):
         """Checks if all pixel values within a patch are between -255 and 5000."""
-        for file in self.raster_files:
-            if file != 'reference.tif': 
-                patch_data = self.raster_data[file][ymin:ymax, xmin:xmax]
-                # Combined validity check
-                if not ((patch_data != np.nan).all()):
-                    return False  # Patch invalid if any pixel fails in any file
-            return True  # Patch valid only if it passed for the first file
+        file = self.raster_files[0]
+        patch_data = self.raster_data[file][ymin:ymax, xmin:xmax]
+        # Combined validity check
+        if not ((patch_data != np.nan).all()):
+            return False  # Patch invalid if any pixel fails in any file
+        return True  # Patch valid only if it passed for the first file
     
     def _generate_random_patches(self, width, height, patch_size, num_patches, top_only=False):
         patches = []
@@ -254,7 +262,7 @@ class DataGenTIFF:
             xmin, ymin, xmax, ymax = patch
             rect = mpatches.Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, linewidth=1, edgecolor='red', facecolor='none')
             ax.add_patch(rect)
-            
+
         ax.set_xlim(0, self.image_width)
         ax.set_ylim(self.image_height, 0)  # Invert y-axis for image-like coordinates 
         ax.set_aspect('equal')  
