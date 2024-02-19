@@ -68,7 +68,7 @@ class DataGenTIFF:
             if file == 'reference.tif': 
                 with rasterio.open(os.path.join(self.data_path, file)) as src:
                     reference_data = np.array(src.read())
-                    self.image_height, self.image_width = reference_data.shape
+                    self.image_height, self.image_width, _ = reference_data.shape
                 break  
 
         for file in self.raster_files:
