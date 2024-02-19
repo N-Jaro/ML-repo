@@ -174,7 +174,7 @@ prediction = model.predict(test_dataset)
 
 print(prediction.shape)
 
-predict_reconstruct = data_generator.reconstruct_predictions(prediction[])
+predict_reconstruct = data_generator.reconstruct_predictions(prediction[:,:,:,0])
 
 # Prepare metadata for saving as TIFF
 tiff_profile = {
