@@ -239,6 +239,9 @@ class DataGenTIFF:
         """Draws squares for training and validation patches on an image-sized canvas."""
 
         fig, ax = plt.subplots(figsize=(self.image_width / 100, self.image_height / 100))  #  Scale according to preference
+        # Display the image as the background
+        file = self.raster_files[0]  # Select a raster file to display
+        ax.imshow(self.raster_data[file], cmap='gray', vmin=0, vmax=1)
 
         # Training patches in green
         for patch in self.training_patches:
@@ -251,7 +254,7 @@ class DataGenTIFF:
             xmin, ymin, xmax, ymax = patch
             rect = mpatches.Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, linewidth=1, edgecolor='red', facecolor='none')
             ax.add_patch(rect)
-
+            
         ax.set_xlim(0, self.image_width)
         ax.set_ylim(self.image_height, 0)  # Invert y-axis for image-like coordinates 
         ax.set_aspect('equal')  
