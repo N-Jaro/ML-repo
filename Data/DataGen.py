@@ -86,16 +86,15 @@ class DataGenTIFF:
             print(f"Warning: Generated only {len(validation_patches)} validation patches.")
         return training_patches, validation_patches
     
-
-
     def is_patch_valid(self, ymin, ymax, xmin, xmax):
-        """Checks if all pixel values within a patch are between -255 and 255."""
+        """Checks if all pixel values within a patch are between -255 and 5000."""
         for file in self.raster_files:
             if file != 'reference.tif': 
                 patch_data = self.raster_data[file][ymin:ymax, xmin:xmax]
-                if not ((patch_data >= -255).all() and (patch_data <= 5000).all()) and (patch_data != np.Null).all():
-                    return False  # Patch invalid if any pixel out of range
-            return True  # Patch valid only if it passed for all raster files
+                # Combined validity check
+                if not ((patch_data >= -255).all() and (patch_data <= 5000).all() and (patch_data != np.nan).all()):
+                    return False  # Patch invalid if any pixel fails in any file
+            return True  # Patch valid only if it passed for the first file
     
     def _generate_random_patches(self, width, height, patch_size, num_patches, top_only=False):
         patches = []
