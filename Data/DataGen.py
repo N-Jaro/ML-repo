@@ -73,11 +73,11 @@ class DataGenTIFF:
 
         for file in self.raster_files:
             if file != 'reference.tif':  
-                raster_array = np.array(Image.open(os.path.join(self.data_path, file)))
+                raster_array = np.array(Image.open(os.path.join(self.data_path, file))).astype(float)
                 print(raster_array.shape)
 
                 # Modify pixels less than -500 (using a single operation)
-                raster_array[raster_array < -500] = np.nan 
+                raster_array[raster_array < -1000] = np.nan
 
                 # Min-max normalization
                 data_min = raster_array.min()
