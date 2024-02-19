@@ -36,6 +36,12 @@ class DataGenTIFF:
         self.raster_data, self.reference_data = self._load_data()
         self.training_patches, self.validation_patches = self._create_datasets()
 
+    def _normalize(self, raster_data):
+        """Normalizes a raster to the 0-1 range."""
+        data_min = raster_data.min()
+        data_max = raster_data.max()
+        return (raster_data - data_min) / (data_max - data_min)
+
     def _standardize_raster(self, raster_data):
         """Pads or crops a raster to match the reference shape."""
         print(self.image_height, self.image_width)
@@ -66,9 +72,19 @@ class DataGenTIFF:
                 break  
 
         for file in self.raster_files:
-            if file != 'reference.tif':  
-                with rasterio.open(os.path.join(self.data_path, file)) as src:
-                    data[file] = self._standardize_raster(src.read())
+                if file != 'reference.tif':  
+                    with rasterio.open(os.path.join(self.data_path, file)) as src:
+                        raster_data = src.read()
+
+                        # Modify pixels less than -500
+                        raster_data[raster_data < -500] = np.nan 
+
+                        # Min-max normalization
+                        data_min = raster_data.min()
+                        data_max = raster_data.max()
+                        raster_data = (raster_data - data_min) / (data_max - data_min)  # Normalize to 0-1
+
+                        data[file] = self._standardize_raster(raster_data)
 
         return data, reference_data
 
@@ -92,7 +108,7 @@ class DataGenTIFF:
             if file != 'reference.tif': 
                 patch_data = self.raster_data[file][ymin:ymax, xmin:xmax]
                 # Combined validity check
-                if not ((patch_data >= -255).all() and (patch_data <= 5000).all() and (patch_data != np.nan).all()):
+                if not ((patch_data != np.nan).all()):
                     return False  # Patch invalid if any pixel fails in any file
             return True  # Patch valid only if it passed for the first file
     
