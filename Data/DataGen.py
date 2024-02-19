@@ -91,11 +91,11 @@ class DataGenTIFF:
         while len(patches) < num_patches:
             xmin = np.random.randint(0, width - patch_size + 1)
             if top_only:
-                ymax = np.random.randint(0, height // 2 - patch_size + 1)  
+                ymin = np.random.randint(0, height // 2 - patch_size + 1)  
             else:
-                ymax = np.random.randint(0, height - patch_size + 1)
+                ymin = np.random.randint(0, height - patch_size + 1)
             xmax = xmin + patch_size
-            ymin = ymax + patch_size
+            ymax = ymin + patch_size
             patches.append([xmin, ymin, xmax, ymax])
         return patches
     
@@ -114,11 +114,11 @@ class DataGenTIFF:
 
             xmin = np.random.randint(0, width - patch_size + 1)
             if top_only:
-                ymax = np.random.randint(0, height // 2 - patch_size + 1) 
+                ymin = np.random.randint(0, height // 2 - patch_size + 1) 
             else:
-                ymax = np.random.randint(0, height - patch_size + 1)
+                ymin = np.random.randint(0, height - patch_size + 1)
             xmax = xmin + patch_size
-            ymin = ymax + patch_size
+            ymax = ymin + patch_size
 
             if len(list(idx.intersection((xmin, ymin, xmax, ymax)))) == 0:
                 patches.append([xmin, ymin, xmax, ymax])
