@@ -178,8 +178,8 @@ class DataGenTIFF:
         dataset = tf.data.Dataset.from_generator(
             generator,  # Call the generator
             output_signature=(
-                tf.TensorSpec(shape=(256, 256, 8), dtype=tf.float32), 
-                tf.TensorSpec(shape=(256, 256), dtype=tf.float32)
+                tf.TensorSpec(shape=(self.patch_size, self.patch_size, 8), dtype=tf.float32), 
+                tf.TensorSpec(shape=(self.patch_size, self.patch_size), dtype=tf.float32)
             )
         )
 
@@ -196,8 +196,8 @@ class DataGenTIFF:
         dataset = tf.data.Dataset.from_generator(
             generator,  # Call the generator
             output_signature=(
-                tf.TensorSpec(shape=(256, 256, 8), dtype=tf.float32), 
-                tf.TensorSpec(shape=(256, 256), dtype=tf.float32)
+                tf.TensorSpec(shape=(self.patch_size, self.patch_size, 8), dtype=tf.float32), 
+                tf.TensorSpec(shape=(self.patch_size, self.patch_size), dtype=tf.float32)
             )
         )
 
@@ -222,8 +222,8 @@ class DataGenTIFF:
         dataset = tf.data.Dataset.from_generator(
             generator,  # Call the generator
             output_signature=(
-                tf.TensorSpec(shape=(256, 256, 8), dtype=tf.float32), 
-                tf.TensorSpec(shape=(256, 256), dtype=tf.float32)
+                tf.TensorSpec(shape=(self.patch_size, self.patch_size, 8), dtype=tf.float32), 
+                tf.TensorSpec(shape=(self.patch_size, self.patch_size), dtype=tf.float32)
             )
         )
 
