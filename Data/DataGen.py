@@ -141,7 +141,7 @@ class DataGenTIFF:
         dataset = tf.data.Dataset.from_tensor_slices(patch_locations)
         if shuffle:
             dataset = dataset.shuffle(len(patch_locations)) 
-        dataset = dataset.map(load_and_process_patch, num_parallel_calls=tf.data.AUTOTUNE)
+        dataset = dataset.map(lambda patch: load_and_process_patch(patch), num_parallel_calls=tf.data.AUTOTUNE)
         dataset = dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE)   
         return dataset 
 
