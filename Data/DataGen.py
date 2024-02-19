@@ -29,13 +29,13 @@ class DataGenTIFF:
         self.image_height = 0
 
         # Print out the configuration
-        print("GenTIFF Initialization:")
-        print(f"    Data Path: {self.data_path}")
-        print(f"    Patch Size: {self.patch_size}")
-        print(f"    Batch Size: {self.batch_size}")
-        print(f"    Training Patches: {self.num_train_patches}")
-        print(f"    Validation Patches: {self.num_val_patches}")
-        print(f"    Overlap: {self.overlap}")
+        print("    GenTIFF Initialization:")
+        print(f"Data Path: {self.data_path}")
+        print(f"Patch Size: {self.patch_size}")
+        print(f"Batch Size: {self.batch_size}")
+        print(f"Training Patches: {self.num_train_patches}")
+        print(f"Validation Patches: {self.num_val_patches}")
+        print(f"Overlap: {self.overlap}")
 
         # Collect all TIFF files, explicitly excluding 'reference.tif'
         self.raster_files = sorted([f for f in os.listdir(data_path) if f.endswith('.tif')])
@@ -105,13 +105,15 @@ class DataGenTIFF:
         return training_patches, validation_patches
     
     def is_patch_valid(self, ymin, ymax, xmin, xmax):
-        """Checks if all pixel values within a patch are between -255 and 5000."""
+        """Checks if all pixel values within a patch are non-NaN."""
+
         file = self.raster_files[0]
         patch_data = self.raster_data[file][ymin:ymax, xmin:xmax]
-        # Combined validity check
-        if not ((patch_data != np.nan).all()):
-            return False  # Patch invalid if any pixel fails in any file
-        return True  # Patch valid only if it passed for the first file
+
+        # Correct NaN check
+        if np.isnan(patch_data).any(): 
+            return False  # Patch invalid if any pixel is NaN
+        return True  # Patch valid if no NaNs are found
     
     def _generate_random_patches(self, width, height, patch_size, num_patches, top_only=False):
         patches = []
