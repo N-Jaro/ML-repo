@@ -125,40 +125,47 @@ class DataGenTIFF:
 
         return patches 
 
-    def tf_data_generator(self, patch_locations, batch_size, shuffle=True):
-        """Data generator using TensorFlow's Dataset API."""
+    def _load_and_process_patch(self, xmin,ymin,xmax,ymax):
+        x_data = tf.stack([self.raster_data[file][ymin:ymax, xmin:xmax] 
+                        for file in self.raster_files if file != 'reference.tif'], axis=-1)
+        y_data = self.reference_data[ymin:ymax, xmin:xmax] 
+        return x_data, y_data
 
-        @tf.function
-        def load_and_process_patch(self, patch):
-            # TensorFlow ops should act on individual elements
-            xmin, ymin, xmax, ymax = patch[0]
-            x_data = tf.stack([self.raster_data[file][ymin:ymax, xmin:xmax] 
-                            for file in self.raster_files if file != 'reference.tif'], axis=-1)
-            y_data = self.reference_data[ymin:ymax, xmin:xmax] 
-            return x_data, y_data
-
+    def create_train_dataset(self):
+        """Creates a TensorFlow Dataset object for the training set."""
         def generator():
-            if shuffle:
-                np.random.shuffle(patch_locations) 
-
-            for patch in patch_locations:
-                yield load_and_process_patch(self, patch) 
+            patches = self.training_patches
+            for xmin,ymin,xmax,ymax in patches:
+                data, label = self._load_and_process_patch(xmin,ymin,xmax,ymax)
+                yield data, label
 
         dataset = tf.data.Dataset.from_generator(
-            generator, 
-            output_types=(tf.float32, tf.float32), # Assuming appropriate  data types
-            output_shapes=((256, 256, len(self.raster_files) - 1), (256, 256)) # Updated shapes
+            generator,  # Call the generator
+            output_signature=(
+                tf.TensorSpec(shape=(256, 256, len(self.raster_files) - 1), dtype=tf.float32), 
+                tf.TensorSpec(shape=(256, 256), dtype=tf.float32)
+            )
         )
 
-        dataset = dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE) 
-        
-        return dataset 
+        return dataset.batch(self.batch_size).prefetch(tf.data.AUTOTUNE)
 
-    def get_training_generator(self, batch_size=32, shuffle=True):
-        return self.tf_data_generator(self.training_patches, batch_size, shuffle)
+    def create_validation_dataset(self):
+        """Creates a TensorFlow Dataset object for the training set."""
+        def generator():
+            patches = self.validation_patches
+            for xmin,ymin,xmax,ymax in patches:
+                data, label = self._load_and_process_patch(xmin,ymin,xmax,ymax)
+                yield data, label
 
-    def get_validation_generator(self, batch_size=32, shuffle=True):
-        return self.tf_data_generator(self.validation_patches, batch_size, shuffle)
+        dataset = tf.data.Dataset.from_generator(
+            generator,  # Call the generator
+            output_signature=(
+                tf.TensorSpec(shape=(256, 256, len(self.raster_files) - 1), dtype=tf.float32), 
+                tf.TensorSpec(shape=(256, 256), dtype=tf.float32)
+            )
+        )
+
+        return dataset.batch(self.batch_size).prefetch(tf.data.AUTOTUNE)
 
 
 
