@@ -26,10 +26,9 @@ class DataGenTIFF:
         
 
         # Collect all TIFF files, explicitly excluding 'reference.tif'
-        self.raster_files = sorted([f for f in os.listdir(data_path) 
-                                    if f.endswith('.tif') and f != 'reference.tif'])
-        if len(self.raster_files) != 8:  # Updated expected count
-            raise ValueError("Incorrect number of raster images. Expected 8 (excluding reference.tif)")
+        self.raster_files = sorted([f for f in os.listdir(data_path) if f.endswith('.tif')])
+        if len(self.raster_files) != 9:  # Updated expected count
+            raise ValueError("Incorrect number of raster images. Expected 9 ( 8 + reference.tif)")
         
         self.raster_data, self.reference_data = self._load_data()
         self.training_patches, self.validation_patches = self._create_datasets()
