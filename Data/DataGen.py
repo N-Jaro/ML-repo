@@ -21,6 +21,8 @@ class DataGenTIFF:
         self.num_train_patches = num_train_patches
         self.num_val_patches = num_val_patches
         self.overlap = overlap
+        self.image_width = 0
+        self.image_height = 0
         
 
         # Collect all TIFF files, explicitly excluding 'reference.tif'
@@ -56,14 +58,15 @@ class DataGenTIFF:
 
         for file in self.raster_files:
             if file == 'reference.tif': 
+                print("Reference.tif")
                 with rasterio.open(os.path.join(self.data_path, file)) as src:
                     reference_data = src.read()
-                    print("Reference.tf")
                     self.image_width, self.image_height = src.shape
                 break  
 
         for file in self.raster_files:
             if file != 'reference.tif':  
+                print(file)
                 with rasterio.open(os.path.join(self.data_path, file)) as src:
                     data[file] = self._standardize_raster(src.read())
 
