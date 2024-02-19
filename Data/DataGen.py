@@ -1,6 +1,7 @@
 import os
 import rasterio
 import numpy as np
+from PIL import Image
 import tensorflow as tf
 from rtree import index
 import matplotlib.pyplot as plt
@@ -66,26 +67,24 @@ class DataGenTIFF:
 
         for file in self.raster_files:
             if file == 'reference.tif': 
-                with rasterio.open(os.path.join(self.data_path, file)) as src:
-                    reference_data = np.array(src.read()).astype(int)
-                    self.image_height, self.image_width, _ = reference_data.shape
+                reference_data = np.array(Image.open(os.path.join(self.data_path, file)))
+                self.image_height, self.image_width, _ = reference_data.shape
                 break  
 
         for file in self.raster_files:
             if file != 'reference.tif':  
-                with rasterio.open(os.path.join(self.data_path, file)) as src:
-                    # Convert to NumPy array immediately
-                    raster_array = np.array(src.read()).astype(float)
+                reference_data = np.array(Image.open(os.path.join(self.data_path, file)))
+                print(raster_array.shape)
 
-                    # Modify pixels less than -500 (using a single operation)
-                    raster_array[raster_array < -500] = np.nan 
+                # Modify pixels less than -500 (using a single operation)
+                raster_array[raster_array < -500] = np.nan 
 
-                    # Min-max normalization
-                    data_min = raster_array.min()
-                    data_max = raster_array.max()
-                    raster_array = (raster_array - data_min) / (data_max - data_min) 
+                # Min-max normalization
+                data_min = raster_array.min()
+                data_max = raster_array.max()
+                raster_array = (raster_array - data_min) / (data_max - data_min) 
 
-                    data[file] = self._standardize_raster(raster_array) 
+                data[file] = self._standardize_raster(raster_array) 
 
         return data, reference_data
 
