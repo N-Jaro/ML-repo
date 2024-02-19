@@ -147,12 +147,12 @@ for layer in model.layers:
         layer.kernel_regularizer = l2(0.001)  # l2 regularizer with strength of 0.001
 
 # define hyperparameters and callback modules
-patience = 3
+patience = 10
 maxepoch = 500
 batch_size = args.batch_size
 callbacks = [
                 ReduceLROnPlateau(monitor='val_loss', factor=0.7, patience=patience, min_lr=1e-9, verbose=1, mode='min'),
-                EarlyStopping(monitor='val_loss', patience=patience, verbose=0),
+                EarlyStopping(monitor='val_loss', patience=patience+5, verbose=0),
                 ModelCheckpoint(model_path+name+'.h5', monitor='val_loss', save_best_only=True, verbose=0),
                 TensorBoard(log_dir=logdir),
                 WandbMetricsLogger(log_freq="epoch"),
@@ -172,6 +172,8 @@ wandb.log({
 test_dataset = data_generator.create_test_dataset()
 
 prediction = model.predict(test_dataset)
+
+print(prediction.shape)
 
 predict_reconstruct = data_generator.reconstruct_predictions(prediction)
 
