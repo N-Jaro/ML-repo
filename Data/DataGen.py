@@ -67,7 +67,7 @@ class DataGenTIFF:
         for file in self.raster_files:
             if file == 'reference.tif': 
                 with rasterio.open(os.path.join(self.data_path, file)) as src:
-                    reference_data = np.array(src.read())
+                    reference_data = np.array(src.read()).astype(int)
                     self.image_height, self.image_width, _ = reference_data.shape
                 break  
 
@@ -75,7 +75,7 @@ class DataGenTIFF:
             if file != 'reference.tif':  
                 with rasterio.open(os.path.join(self.data_path, file)) as src:
                     # Convert to NumPy array immediately
-                    raster_array = np.array(src.read()) 
+                    raster_array = np.array(src.read()).astype(float)
 
                     # Modify pixels less than -500 (using a single operation)
                     raster_array[raster_array < -500] = np.nan 
