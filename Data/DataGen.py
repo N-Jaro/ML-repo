@@ -67,25 +67,25 @@ class DataGenTIFF:
         for file in self.raster_files:
             if file == 'reference.tif': 
                 with rasterio.open(os.path.join(self.data_path, file)) as src:
-                    reference_data = src.read()
-                    self.image_height, self.image_width = src.shape
+                    reference_data = np.array(src.read())
+                    self.image_height, self.image_width = reference_data.shape
                 break  
 
         for file in self.raster_files:
-                if file != 'reference.tif':  
-                    with rasterio.open(os.path.join(self.data_path, file)) as src:
-                        raster_data = src.read()
+            if file != 'reference.tif':  
+                with rasterio.open(os.path.join(self.data_path, file)) as src:
+                    # Convert to NumPy array immediately
+                    raster_array = np.array(src.read()) 
 
-                        # Modify pixels less than -500
-                        raster_data[np.isnan(raster_data)] = np.nan  # Handle existing NaNs (if any)
-                        raster_data[raster_data < -500] = np.nan  # Set values less than -500 to NaN 
+                    # Modify pixels less than -500 (using a single operation)
+                    raster_array[raster_array < -500] = np.nan 
 
-                        # Min-max normalization
-                        data_min = raster_data.min()
-                        data_max = raster_data.max()
-                        raster_data = (raster_data - data_min) / (data_max - data_min)  # Normalize to 0-1
+                    # Min-max normalization
+                    data_min = raster_array.min()
+                    data_max = raster_array.max()
+                    raster_array = (raster_array - data_min) / (data_max - data_min) 
 
-                        data[file] = self._standardize_raster(raster_data)
+                    data[file] = self._standardize_raster(raster_array) 
 
         return data, reference_data
 
