@@ -45,19 +45,9 @@ class DataGenTIFF:
         self.raster_data, self.reference_data = self._load_data()
         self.training_patches, self.validation_patches = self._create_datasets()
 
-    # def _normalize(self, raster_data):
-    #     # Find minimum value excluding NaN
-    #     data_min = np.nanmin(raster_data)
-    #     # Find maximum value excluding NaN
-    #     data_max = np.nanmax(raster_data)
-    #     # Normalize the data
-    #     normalized_data = (raster_data - data_min) / (data_max - data_min)
-
-    #     return normalized_data
-
     def _standardize_raster(self, raster_data):
         """Pads or crops a raster to match the reference shape."""
-        print(self.image_height, self.image_width)
+        # print(self.image_height, self.image_width)
         ref_shape = (self.image_height, self.image_width) 
 
         new_data = np.zeros(ref_shape, dtype=raster_data.dtype)
@@ -85,7 +75,6 @@ class DataGenTIFF:
         for file in self.raster_files:
             if file != 'reference.tif':  
                 raster_array = np.array(Image.open(os.path.join(self.data_path, file))).astype(float)
-                print(raster_array.shape)
 
                 # Modify pixels less than -500 (using a single operation)
                 raster_array[raster_array < -1000] = np.nan
