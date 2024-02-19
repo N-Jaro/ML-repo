@@ -240,7 +240,7 @@ class DataGenTIFF:
             A NumPy array representing the reconstructed image.
         """
 
-        reconstructed_image = np.zeros((self.image_height, self.image_width), dtype=predictions.dtype)
+        reconstructed_image = np.zeros((self.image_height//2, self.image_width), dtype=predictions.dtype)
         patch_count = np.zeros_like(reconstructed_image)  # Keep track of patch overlaps
 
         patch_num = 0
