@@ -136,7 +136,7 @@ with strategy.scope():
                                 'dice_coef':dice_coef,})
     else:
         if (args.model == 'attentionUnet'):
-            model = UNET_224(IMG_WIDTH=256, INPUT_CHANNELS=6)
+            model = UNET_224(IMG_WIDTH=256, INPUT_CHANNELS=8)
             model.compile(optimizer = Adam(learning_rate=args.learning_rate),
                             loss = dice_coef_loss,
                             metrics = [dice_coef,'accuracy'])
