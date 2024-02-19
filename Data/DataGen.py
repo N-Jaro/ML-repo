@@ -85,7 +85,12 @@ class DataGenTIFF:
         if len(validation_patches) < self.num_val_patches:
             print(f"Warning: Generated only {len(validation_patches)} validation patches.")
         return training_patches, validation_patches
-
+    
+    def is_patch_valid(self, ymin, ymax, xmin, xmax):
+        """Checks if all pixel values within a patch are between -255 and 255."""
+        patch_data = self.raster_data[0][ymin:ymax, xmin:xmax]
+        return (patch_data >= -255).all() and (patch_data <= 255).all()
+    
     def _generate_random_patches(self, width, height, patch_size, num_patches, top_only=False):
         patches = []
         while len(patches) < num_patches:
@@ -96,7 +101,10 @@ class DataGenTIFF:
                 ymin = np.random.randint(0, height - patch_size + 1)
             xmax = xmin + patch_size
             ymax = ymin + patch_size
-            patches.append([xmin, ymin, xmax, ymax])
+            
+            if self.is_patch_valid(ymin, ymax, xmin, xmax):
+                patches.append([xmin, ymin, xmax, ymax])
+
         return patches
     
     def _generate_nonoverlapping_patches(self, width, height, patch_size, num_patches, existing_patches, top_only=False):
@@ -120,7 +128,8 @@ class DataGenTIFF:
             xmax = xmin + patch_size
             ymax = ymin + patch_size
 
-            if len(list(idx.intersection((xmin, ymin, xmax, ymax)))) == 0:
+                    # Validity Check
+            if self.is_patch_valid(ymin, ymax, xmin, xmax) and len(list(idx.intersection((xmin, ymin, xmax, ymax)))) == 0:
                 patches.append([xmin, ymin, xmax, ymax])
 
         return patches 
