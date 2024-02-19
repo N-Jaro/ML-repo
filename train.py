@@ -5,7 +5,7 @@ import rasterio
 import argparse
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras import layers
+from tensorflow.keras import layers, Model
 from tensorflow.data import AUTOTUNE 
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.models import load_model
@@ -47,7 +47,7 @@ parser.add_argument('--num_train_patches', type=int, default=200,
                     help='Number of training patches.')
 parser.add_argument('--num_val_patches', type=int, default=50,
                     help='Number of validation patches.')
-parser.add_argument('--test_overlap', type=int, default=50,
+parser.add_argument('--test_overlap', type=int, default=30,
                     help='Test patch overlap size.')
 
 parser.add_argument('--seed', type=int, default=4444,
@@ -113,17 +113,63 @@ tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
 
 print('model location: '+ model_path + name + '.h5')
 
-wandb.init( 
-    project=args.project_name,  
-    sync_tensorboard=True,    
-    name=args.name_id,       
-    config=config           
-)
+# wandb.init( 
+#     project=args.project_name,  
+#     sync_tensorboard=True,    
+#     name=args.name_id,       
+#     config=config           
+# )
 
 # Initialize the MirroredStrategy
 strategy = tf.distribute.MirroredStrategy()
 
 print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
+
+def create_unet(input_shape, num_classes):
+    """Creates a small U-Net model for image segmentation.
+
+    Args:
+        input_shape: The shape of the input images (height, width, channels).
+        num_classes: Number of classes to predict (for segmentation output).
+
+    Returns:
+        A Keras model representing the U-Net architecture.
+    """
+
+    # Encoder (Downsampling)
+    inputs = layers.Input(shape=input_shape)
+
+    conv1 = layers.Conv2D(32, 3, activation='relu', padding='same', kernel_initializer='he_normal')(inputs)
+    conv1 = layers.Conv2D(32, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv1)
+    pool1 = layers.MaxPooling2D(pool_size=(2, 2))(conv1)
+
+    conv2 = layers.Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(pool1)
+    conv2 = layers.Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv2)
+    pool2 = layers.MaxPooling2D(pool_size=(2, 2))(conv2)
+
+    # Bottleneck 
+    conv3 = layers.Conv2D(128, 3, activation='relu', padding='same', kernel_initializer='he_normal')(pool2)
+    conv3 = layers.Conv2D(128, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv3)
+
+    # Decoder (Upsampling)
+    up1 = layers.Conv2DTranspose(64, 2, strides=(2,2), padding='same')(conv3)
+    concat1 = layers.concatenate([up1, conv2], axis=3)  # Skip connection
+    conv4 = layers.Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(concat1)
+    conv4 = layers.Conv2D(64, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv4)
+
+    up2 = layers.Conv2DTranspose(32, 2, strides=(2,2), padding='same')(conv4)
+    concat2 = layers.concatenate([up2, conv1], axis=3) 
+    conv5 = layers.Conv2D(32, 3, activation='relu', padding='same', kernel_initializer='he_normal')(concat2)
+    conv5 = layers.Conv2D(32, 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv5)
+
+    # Output layer
+    outputs = layers.Conv2D(num_classes, 1, activation='sigmoid' if num_classes==1 else 'softmax')(conv5)  
+
+    return Model(inputs=inputs, outputs=outputs)
+
+# Example usage 
+input_shape = (256, 256, 8)  # Example shape
+num_classes = 1  # Adjust for your segmentation task 
 
 # Define a model within the strategy's scope
 with strategy.scope():
@@ -135,7 +181,7 @@ with strategy.scope():
     #                             'dice_coef':dice_coef,})
     # else:
     # if (args.model == 'attentionUnet'):
-    model = UNET_224(IMG_WIDTH=256, INPUT_CHANNELS=8)
+    model = create_unet(input_shape, num_classes)
     model.compile(optimizer = Adam(learning_rate=args.learning_rate),
                     loss = dice_coef_loss,
                     metrics = [dice_coef,'accuracy'])
@@ -149,24 +195,25 @@ with strategy.scope():
 patience = 3
 maxepoch = 500
 batch_size = args.batch_size
-callbacks = [
-                ReduceLROnPlateau(monitor='val_loss', factor=0.7, patience=patience, min_lr=1e-9, verbose=1, mode='min'),
-                EarlyStopping(monitor='val_loss', patience=patience, verbose=0),
-                ModelCheckpoint(model_path+name+'.h5', monitor='val_loss', save_best_only=True, verbose=0),
-                TensorBoard(log_dir=logdir),
-                WandbMetricsLogger(log_freq="epoch"),
-                WandbCallback(save_model=True, monitor="val_loss") 
-            ]
-
+# callbacks = [
+#                 ReduceLROnPlateau(monitor='val_loss', factor=0.7, patience=patience, min_lr=1e-9, verbose=1, mode='min'),
+#                 EarlyStopping(monitor='val_loss', patience=patience, verbose=0),
+#                 ModelCheckpoint(model_path+name+'.h5', monitor='val_loss', save_best_only=True, verbose=0),
+#                 TensorBoard(log_dir=logdir),
+#                 WandbMetricsLogger(log_freq="epoch"),
+#                 WandbCallback(save_model=True, monitor="val_loss") 
+#             ]
+# train_history = model.fit(training_dataset, validation_data = validation_dataset, batch_size = batch_size, 
+#                             epochs = maxepoch, verbose=1, callbacks = callbacks)
 train_history = model.fit(training_dataset, validation_data = validation_dataset, batch_size = batch_size, 
-                            epochs = maxepoch, verbose=1, callbacks = callbacks)
+                            epochs = maxepoch, verbose=1)
 
-# Log additional metrics at the end of training
-wandb.log({
-    "final_train_loss": train_history.history['loss'][-1],
-    "final_val_loss": train_history.history['val_loss'][-1],
-    "final_val_accuracy": train_history.history['val_accuracy'][-1]
-})
+# # Log additional metrics at the end of training
+# wandb.log({
+#     "final_train_loss": train_history.history['loss'][-1],
+#     "final_val_loss": train_history.history['val_loss'][-1],
+#     "final_val_accuracy": train_history.history['val_accuracy'][-1]
+# })
 
 test_dataset = data_generator.create_test_dataset()
 
