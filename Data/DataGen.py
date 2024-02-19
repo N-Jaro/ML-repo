@@ -141,7 +141,7 @@ class DataGenTIFF:
             idx.insert(i, patch)
 
         patches = []
-        max_attempts = 100000  # Maximum attempts to find non-overlapping patches
+        max_attempts = 300000  # Maximum attempts to find non-overlapping patches
 
         for _ in range(max_attempts):
             if len(patches) >= num_patches:
