@@ -66,27 +66,30 @@ class DataGenTIFF:
         data = {}
         reference_data = None
 
+        #  Handle reference raster loading
+        reference_path = os.path.join(self.data_path, 'reference.tif')  
+        with rasterio.open(reference_path) as src:
+            reference_data = src.read(1)  # Read the first band 
+            self.image_height, self.image_width = reference_data.shape
+
+        # Load and process input rasters
         for file in self.raster_files:
-            if file == 'reference.tif': 
-                reference_data = np.array(Image.open(os.path.join(self.data_path, file)))
-                self.image_height, self.image_width = reference_data.shape
-                break  
+            if file != 'reference.tif':
+                raster_path = os.path.join(self.data_path, file)
+                with rasterio.open(raster_path) as src:
+                    raster_array = src.read(1).astype(float)
 
-        for file in self.raster_files:
-            if file != 'reference.tif':  
-                raster_array = np.array(Image.open(os.path.join(self.data_path, file))).astype(float)
+                    # Modify pixels less than -1000 (using a single operation)
+                    raster_array[raster_array < -1000] = np.nan  
 
-                # Modify pixels less than -500 (using a single operation)
-                raster_array[raster_array < -1000] = np.nan
+                    # Quantile normalization
+                    q1 = np.nanpercentile(raster_array, 5)  
+                    q3 = np.nanpercentile(raster_array, 95)  
+                    iqr = q3 - q1
+                    raster_array = np.clip(raster_array, q1, q3)  
+                    raster_array = (raster_array - q1) / iqr 
 
-                # Quantile normalization
-                q1 = np.nanpercentile(raster_array, 5)  # Lower quantile (e.g., 5th percentile)
-                q3 = np.nanpercentile(raster_array, 95)  # Upper quantile (e.g., 95th percentile)
-                iqr = q3 - q1
-                raster_array = np.clip(raster_array, q1, q3)  # Clip outliers
-                raster_array = (raster_array - q1) / iqr  # Normalize
-
-                data[file] = self._standardize_raster(raster_array) 
+                    data[file] = self._standardize_raster(raster_array) 
 
         return data, reference_data
 
