@@ -20,7 +20,7 @@ from Data.DataGen import DataGenTIFF
 
 np.random.seed(4444)
 
-data_generator = DataGenTIFF('/projects/bbym/nathanj/ML-repo/Alexander/', patch_size = 256, num_train_patches = 200, 
+data_generator = DataGenTIFF('/projects/bbym/nathanj/ML-repo/Alexander/', patch_size = 224, num_train_patches = 200, 
                                 num_val_patches = 50, overlap = 30)
 
 model = load_model('/projects/bbym/nathanj/ML-repo/rowancreek-Unet-attentionUnet-tf.h5',
