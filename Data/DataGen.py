@@ -52,14 +52,13 @@ class DataGenTIFF:
         """Loads both input rasters and the reference raster."""
         data = {}
         reference_data = None
-        image_width = None
-        image_height = None
 
         for file in self.raster_files:
             if file == 'reference.tif': 
-                print("Reference.tif")
+                print("reference.tif")
                 with rasterio.open(os.path.join(self.data_path, file)) as src:
                     reference_data = src.read()
+                    print("src.shape:", src.shape)
                     self.image_width, self.image_height = src.shape
                 break  
 
