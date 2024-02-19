@@ -127,23 +127,23 @@ print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
 
 # Define a model within the strategy's scope
 with strategy.scope():
-    if os.path.isfile(model_path + name + '.h5'):
-        model = load_model(model_path+name+'.h5',
-                    custom_objects={'multiplication': multiplication,
-                                'multiplication2': multiplication2,
-                                'dice_coef_loss':dice_coef_loss,
-                                'dice_coef':dice_coef,})
-    else:
-        if (args.model == 'attentionUnet'):
-            model = UNET_224(IMG_WIDTH=256, INPUT_CHANNELS=8)
-            model.compile(optimizer = Adam(learning_rate=args.learning_rate),
-                            loss = dice_coef_loss,
-                            metrics = [dice_coef,'accuracy'])
+    # if os.path.isfile(model_path + name + '.h5'):
+    #     model = load_model(model_path+name+'.h5',
+    #                 custom_objects={'multiplication': multiplication,
+    #                             'multiplication2': multiplication2,
+    #                             'dice_coef_loss':dice_coef_loss,
+    #                             'dice_coef':dice_coef,})
+    # else:
+    # if (args.model == 'attentionUnet'):
+    model = UNET_224(IMG_WIDTH=256, INPUT_CHANNELS=8)
+    model.compile(optimizer = Adam(learning_rate=args.learning_rate),
+                    loss = dice_coef_loss,
+                    metrics = [dice_coef,'accuracy'])
 
-# Add L2 regularization to certain layers:  
-for layer in model.layers:  
-    if isinstance(layer, layers.Conv2D) or isinstance(layer, layers.Dense):  
-        layer.kernel_regularizer = l2(0.001)  # l2 regularizer with strength of 0.001
+# # Add L2 regularization to certain layers:  
+# for layer in model.layers:  
+#     if isinstance(layer, layers.Conv2D) or isinstance(layer, layers.Dense):  
+#         layer.kernel_regularizer = l2(0.001)  # l2 regularizer with strength of 0.001
 
 # define hyperparameters and callback modules
 patience = 3
@@ -184,8 +184,6 @@ tiff_profile = {
     'width': predict_reconstruct.shape[1],
     'height': predict_reconstruct.shape[0],
     'count': 1,  # Assuming a single-band image 
-    'crs': None,  # Specify CRS (coordinate reference system) if needed
-    'transform': rasterio.Affine(1, 0, 0, 0, 1, 0),  # Identity transform (consider adjustments)
 }
 
 # Save to TIFF
