@@ -77,7 +77,8 @@ class DataGenTIFF:
                         raster_data = src.read()
 
                         # Modify pixels less than -500
-                        raster_data[raster_data < -500] = np.nan 
+                        raster_data[np.isnan(raster_data)] = np.nan  # Handle existing NaNs (if any)
+                        raster_data[raster_data < -500] = np.nan  # Set values less than -500 to NaN 
 
                         # Min-max normalization
                         data_min = raster_data.min()
