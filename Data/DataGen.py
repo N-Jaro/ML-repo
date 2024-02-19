@@ -5,7 +5,7 @@ import tensorflow as tf
 from rtree import index
 
 class DataGenTIFF:
-    def __init__(self, data_path, patch_size=256, num_train_patches=200, num_val_patches=100, overlap=30):
+    def __init__(self, data_path,batch_size=32, patch_size=256, num_train_patches=200, num_val_patches=100, overlap=30):
         """
         Initializes the DataGenTIFF class.
 
@@ -18,6 +18,7 @@ class DataGenTIFF:
         """
         self.data_path = data_path
         self.patch_size = patch_size
+        self.batch_size = batch_size
         self.num_train_patches = num_train_patches
         self.num_val_patches = num_val_patches
         self.overlap = overlap
