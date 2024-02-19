@@ -241,19 +241,12 @@ class DataGenTIFF:
         """
 
         reconstructed_image = np.zeros((self.image_height//2, self.image_width), dtype=predictions.dtype)
-        patch_count = np.zeros_like(reconstructed_image)  # Keep track of patch overlaps
 
         patch_num = 0
         for x in range(0, self.image_width - self.patch_size + 1, self.patch_size - self. overlap):
             for y in range(self.image_height // 2, self.image_height - self.patch_size + 1, self.patch_size - self. overlap): 
-                if predictions.ndim == 3:
-                    patch = predictions[patch_num, :, 0]  # Extract a patch (assuming first channel) 
-                else:
                     patch = predictions[patch_num, :, :]
-
-                # OR Logic 
-                mask = patch != 0  # Create a mask of non-zero pixels within the patch
-                reconstructed_image[y : y + self.patch_size, x : x + self.patch_size][mask] = patch[mask] 
+                    reconstructed_image[y : y + self.patch_size, x : x + self.patch_size] = patch
 
         return reconstructed_image
     
