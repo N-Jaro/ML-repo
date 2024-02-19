@@ -35,10 +35,11 @@ class DataGenTIFF:
 
     def _standardize_raster(self, raster_data):
         """Pads or crops a raster to match the reference shape."""
-        ref_shape = (self.image_height, self.image_width) 
+        ref_shape = (self.image_width, self.image_height) 
 
         new_data = np.zeros(ref_shape, dtype=raster_data.dtype)
-        new_data[:raster_data.shape[0], :raster_data.shape[1]] = raster_data  
+        print("new_data.shape:", new_data.shape)
+        new_data[:raster_data.shape[0], :raster_data.shape[1]] = raster_data 
 
         # Handle potential padding
         if ref_shape[0] > raster_data.shape[0]:
@@ -55,7 +56,7 @@ class DataGenTIFF:
 
         for file in self.raster_files:
             if file == 'reference.tif': 
-                print("reference.tif")
+                # print("reference.tif")
                 with rasterio.open(os.path.join(self.data_path, file)) as src:
                     reference_data = src.read()
                     print("src.shape:", src.shape)
