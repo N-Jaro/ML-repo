@@ -89,7 +89,7 @@ class DataGenTIFF:
     def is_patch_valid(self, ymin, ymax, xmin, xmax):
         """Checks if all pixel values within a patch are between -255 and 255."""
         patch_data = self.raster_data[0][ymin:ymax, xmin:xmax]
-        return (patch_data >= -255).all() and (patch_data <= 255).all()
+        return (patch_data >= -255).all() and (patch_data <= 255).all() and (patch_data != np.Null).all()
     
     def _generate_random_patches(self, width, height, patch_size, num_patches, top_only=False):
         patches = []
