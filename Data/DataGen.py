@@ -38,10 +38,14 @@ class DataGenTIFF:
         self.training_patches, self.validation_patches = self._create_datasets()
 
     def _normalize(self, raster_data):
-        """Normalizes a raster to the 0-1 range."""
-        data_min = raster_data.min()
-        data_max = raster_data.max()
-        return (raster_data - data_min) / (data_max - data_min)
+        # Find minimum value excluding NaN
+        data_min = np.nanmin(raster_data)
+        # Find maximum value excluding NaN
+        data_max = np.nanmax(raster_data)
+        # Normalize the data
+        normalized_data = (raster_data - data_min) / (data_max - data_min)
+
+        return normalized_data
 
     def _standardize_raster(self, raster_data):
         """Pads or crops a raster to match the reference shape."""
