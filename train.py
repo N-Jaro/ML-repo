@@ -12,8 +12,7 @@ from tensorflow.keras.models import load_model
 from tensorflow.python.ops.numpy_ops import np_config 
 from tensorflow.keras.optimizers import Adam, SGD, RMSprop
 from tensorflow.keras.callbacks import (ModelCheckpoint, EarlyStopping, ReduceLROnPlateau, TensorBoard)
-from models.lossFunc import (smooth_dice_combined_loss, dice_coef_loss, dice_coef, jacard_coef)
-from models.attentionUnet import (UNET_224, Residual_CNN_block,  multiplication, attention_up_and_concatenate, multiplication2, attention_up_and_concatenate2)
+from models.attentionUnet import (dice_coef_loss, dice_coef, jacard_coef, UNET_224, Residual_CNN_block,  multiplication, attention_up_and_concatenate, multiplication2, attention_up_and_concatenate2)
 from wandb.keras import WandbMetricsLogger, WandbModelCheckpoint, WandbCallback
 import matplotlib.pyplot as plt
 from Data.DataGen import DataGenTIFF
@@ -175,7 +174,7 @@ prediction = model.predict(test_dataset)
 
 print(prediction.shape)
 
-predict_reconstruct = data_generator.reconstruct_predictions(prediction)
+predict_reconstruct = data_generator.reconstruct_predictions(prediction[])
 
 # Prepare metadata for saving as TIFF
 tiff_profile = {
