@@ -53,17 +53,6 @@ parser.add_argument('--test_overlap', type=int, default=30,
 parser.add_argument('--seed', type=int, default=4444,
                     help='Random seed for reproducibility.')
 
-# parser.add_argument('--augment', type=bool, default=True,
-#                     help='Whether to apply data augmentation.')
-# parser.add_argument('--rotation_rate', type=float, default=0.4,
-#                     help='Probability of applying a random rotation during augmentation.')
-# parser.add_argument('--vertical_flip_rate', type=float, default=0.4,
-#                     help='Probability of applying a vertical flip during augmentation.')
-# parser.add_argument('--horizontal_flip_rate', type=float, default=0.4,
-#                     help='Probability of applying a horizontal flip during augmentation.')
-# parser.add_argument('--hue_factor', type=float, default=0.2,
-#                     help='Maximum amount of hue shift to apply during augmentation.')
-
 args = parser.parse_args()
 
 config = vars(args)
@@ -186,10 +175,10 @@ with strategy.scope():
                     loss = dice_coef_loss,
                     metrics = [dice_coef,'accuracy'])
 
-# Add L2 regularization to certain layers:  
-for layer in model.layers:  
-    if isinstance(layer, layers.Conv2D) or isinstance(layer, layers.Dense):  
-        layer.kernel_regularizer = l2(0.001)  # l2 regularizer with strength of 0.001
+# # Add L2 regularization to certain layers:  
+# for layer in model.layers:  
+#     if isinstance(layer, layers.Conv2D) or isinstance(layer, layers.Dense):  
+#         layer.kernel_regularizer = l2(0.001)  # l2 regularizer with strength of 0.001
 
 # define hyperparameters and callback modules
 patience = 3
